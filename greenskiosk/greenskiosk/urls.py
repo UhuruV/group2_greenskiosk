@@ -19,13 +19,16 @@ from catalogue import views
 from django.contrib.staticfiles.urls import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from . import settings
+from kiosks import views
 
 
  
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('catalogue/', include('catalogue.urls')),
+    path('', include('catalogue.urls')),
+    path('',include('kiosks.urls')),
+    path('',include('shopping.urls')),
 ]
 
 if settings.DEBUG:
