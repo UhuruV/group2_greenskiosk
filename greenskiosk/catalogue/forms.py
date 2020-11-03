@@ -17,5 +17,4 @@ class ProductForm(forms.ModelForm):
             'number_in_stock':forms.TextInput(attrs={'class': "form-control"}),
             'image':forms.FileInput(attrs={'class': "form-control"})
         }
-
         

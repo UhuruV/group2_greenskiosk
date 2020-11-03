@@ -94,7 +94,7 @@
 <div class="card-body">
     <h5 class="card-title">{{product.title}}</h5>
     <p>{{product.kiosk.currency}}-{{product.selling_price}}</p>
-    <a href="{% url "upload_cart" product.id %}" class="btn ">Add To Cart</a>
+    <a href="{  % {% url ' shopping:cart_add' product_id  %}%}" class="btn ">Add To Cart</a>
   </div>
 </div>
 </div>
