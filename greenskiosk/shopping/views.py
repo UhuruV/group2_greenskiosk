@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, request
+from django.core.exceptions import ObjectDoesNotExist
 from catalogue.models import Product
 from .models import Cart
 from django.views.decorators.http import require_POST
@@ -10,20 +11,46 @@ from django.urls import reverse
 
 @require_POST
 def cart_add(request, product_id):
-    cart = Cart(request)
-    product = get_object_or_404(Product, id=product_id)
-    form = CartAddProductForm(request.POST)
-    if form.is_valid():
-        cd = form.cleaned_data
-        cart.add(product=product, quantity=cd['quantity'], update_quantity=cd['update'])
-        return redirect('shopping:cart_detail')
+    try:
+        cart_id = request.session['cart_id']
+        cart=Cart.objects.get(id=cart_id)
+    except KeyError:
+        cart = Cart.objects.create(status="new")
+        request.session['cart_id'] = cart.id
         
-def cart_remove(request, product_id):
-    cart = Cart(request)
-    product = get_object_or_404(Product, id=product_id)
-    cart.remove(product)
-    return redirect('cart_detail')
+    try:
+        product = Product.objects.get(id=product_id)
+    except ObjectDoesNotExist:
+        return render(request, 'detail.html', {"error": "cart does not exist"})
+
+    cart.products.add(product)
+    products = cart.products.all()
+
+    if request.user.is_authenticated and not cart.owner:
+        cart.owner = request.user
+        cart.save()
+
+    return render(request, "detail.html", {"products": products})
     
+
+    
+def cart_remove(request, product_id):
+    try:
+        cart_id = request.session['cart_id']
+    except KeyError:
+        return render(request, "detail.html", {"error": "Cart  not found"})
+
+    try:
+        product = Product.objects.get(id=product_id)
+    except ObjectDoesNotExist:
+        return render(request, "detail.html", {"error": "Product  not found"})
+
+    cart = Cart.objects.get(id=cart_id)
+    cart.products.remove(product)
+    products = cart.products.all()
+    
+    return render(request, "detail.html", {"products": products})
+      
 
 def cart_detail(request):
     """ 
@@ -61,7 +88,7 @@ def update_cart(request, slug):
         the_id = new_cart.id
     cart = Cart.objects.get(id=the_id)
 
-#Querries the proucts,add the respective product,calculates the total and removes a product from cart too
+#Querries the products,add the respective product,calculates the total and removes a product from cart too
 
     try:
         product = Product.objects.get(slug=slug)

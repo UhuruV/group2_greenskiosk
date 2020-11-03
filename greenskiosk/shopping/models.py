@@ -10,7 +10,8 @@ class Cart(models.Model):
     products = models.ManyToManyField(Product)
     date_created = models.DateTimeField()
     total_price = models.DecimalField(max_digits=7, decimal_places=2,default=1.00)
-    status=models.CharField(max_length=50,null=True)
+    status = models.CharField(max_length=50, null=True)
+    user=models.ForeignKey(User,blank=True,null=True)
 
     
     def __str__(self):
